@@ -1,0 +1,42 @@
+---
+title: "Internships"
+
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Pathloss of LTE network
+### Telcotec Tunisia
+The work developed consisted on constructing a new linear-regression model for the estimation of the
+path-loss exponent and the parameters of the shadowing from the propagation-loss data collected by the
+mobiles with respect to their serving base stations. After validation of the model, a cartography interface
+was constructed to visualize the propagation-loss prediction in Tunis.
+
+<span style="font-family:Arial; font-size:3em;">Poster </span>
+
+<iframe id="inlineFrameExample"
+    title="Inline Frame Example"
+    width="1100"
+    height="700"
+    src="https://www.cjoint.com/doc/18_12/HLdxXxihauO_prediction-de-laffaiblissement-4-.pdf">
+</iframe>
+
+
+## Satellite images Restoration with a particle filter
+### Laboratoire d'Informatique Signal et Image de la Côte d'Opale
+Within the department ’Images and Deep Learning ’, the work developed consisted of the construction and
+the implementation of a particle filter, also known by sequential Monte Carlo filter , to the noisy images
+captured by the Sentinel Satellite 2-A. The idea of the filter implementation is to estimate the posterior
+density of the pixels assuming that all the pixels form a Markov chain.
+
+<span style="font-family:Arial; font-size:3em;">Report </span>
+
+<iframe id="inlineFrameExample"
+    title="Inline Frame Example"
+    width="1000"
+    height="700"
+    src="https://www.cjoint.com/doc/18_12/HLdx23R4LRO_rapportfinal.pdf">
+</iframe>

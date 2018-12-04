@@ -1,0 +1,43 @@
+---
+title: "Shiny Applications"
+
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## *  Principal Component Analysis.
+The project was to study the factor of undernourishment of African countries by a PCA. First, we set
+up a map to explore the data. Second, we analysed the main causes of undernourishment based on the
+correlation of variables.
+
+<iframe id="inlineFrameExample"
+    title="Inline Frame Example"
+    width="1000"
+    height="700"
+    src="https://marwenbaklouti.shinyapps.io/projet_acp/">
+</iframe>
+
+
+
+
+
+
+\\
+
+
+## *  Machine Learning Application
+Using R shiny , an Interactive application was constructed to do an uni-variate and bi-variate analysis of
+the explanatory variable, and the application of some Data mining algorithms the predict the variable of
+interest
+
+<iframe id="inlineFrameExample"
+    title="Inline Frame Example"
+    width="1000"
+    height="700"
+    src=" https://marwenbaklouti.shinyapps.io/projet_machine_learning/
+">
+</iframe>
+

@@ -1,0 +1,245 @@
+---
+title: "Bayesian approach for estimation of Exponential Change Point Model for the Evolution of TND Vs EUR  "
+author: "Marwen Baklouti"
+date: "November 16 , 2018"
+output: 
+  html_document: 
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction : 
+Since 2017 , We Hear that The  value of the Tunisian Dinar is falling behind in the face of the Euro and other currencies. In this article
+we will proceed with bayesian approach to detect the change year where the leap between the dinar and Euro had happened.
+
+## Data Visualisation and plots :
+```{r, echo=F,warning=F,message=F}
+load("final.RData")
+library(tidyverse)
+basefinale <- read_csv("basefinale.csv")
+
+
+
+```
+
+```{r, warning=F, message=F }
+
+library(ggplot2)
+library(plotly)
+
+colnames(basefinale)=c("rowcount","Date","price")
+head(basefinale)
+p<-ggplot(basefinale,aes(x=Date,y=price))+geom_line()+theme_bw()
+ggplotly(p)
+
+```
+SO while observing this chart we can detect that exchage rate's evolution has made a leap after the tunisian revolution in 2011 
+So by doing a bayesian approch with using Gibbs Sapmler, we will estimate that change date and we will estimate the exponential distribution of the exchange rate before and after the change point 
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+  
+## Statistical Model
+
+Suppose that we had collected the same quantitative data in two diffrent periods:
+$$y_1^1,\ldots,y_{n_1}^1$$
+and 
+$$y_1^2,\ldots,y_{n_2}^2$$
+Since our aim is to compare the average of both groups by assuming that both of them are sampled from an univariate Exponential distribution with means respectively $\mu^1$ and $\mu^2$ . 
+
+Since we don't have any solid prior information on the parameters we will then choose flat priors on the parameters. 
+
+Hence our Bayesian Statistical Model is defined as follows
+
+$$y_1^1,\ldots,y_{n_1}^1\sim\mathcal{exp}(\mu^1)$$
+and 
+$$y_1^2,\ldots,y_{n_2}^2\sim\mathcal{exp}(\mu^2)$$
+where 
+$$\pi(\mu^1,\mu^2)\propto \mathbb{1}_{\mathbb{R}^2}(\mu^1,\mu^2)\,\mathbb{1}_{\mathbb{R}^*_+}(\tau)$$
+
+## `OpenBUGS`
+
++ 	This software is part of the BUGS project (Bayesian inference Using Gibbs Sampler) that aims to facilitate the use of MCMC methods for Bayesian Statistics. It’s developed by MRC Biostatistics of Cambridge University.
+
++ `OpenBUGS` is a free software.
+
++ `OpenBUGS` has a simple GUI with predefined models that can be constructed using `DoodleBUGS`. 
+
++ We can also use `OpenBUGS` from `R` using `R2OpenBUGS` package.
+
++ `OpenBUGS` is based then on the Gibbs Sampler Algorithm.
+
+## Gibbs sampler
+
+**What's a Gibbs Sampler**
+
++ It's an algorithm for simulating Markov chains.
+
+
++ Let $\theta=(\theta_1,\ldots,\theta_k)$ be a random vector with joint distribution $f$, 
+
++ *Aim*: simulate a sample with distribution $f$. 
+
+**How it works?**
+
+
+1. Choose arbitrary starting values: $\theta^{(0)}=(\theta_1^{(0)},\ldots,\theta_k^{(0)})$
+
+2. Sample new values for each element of $\theta$ by cycling through the following steps:
+
+
+   +  Sample a new value for $\theta_1^{(1)}$ from the full *conditional distribution* of $\theta_1$ given the most recent values of all other elements of $\theta$: 
+   $$ \theta_1^{(1)}\sim p\left(\theta_1 \mid\theta_2^{(0)},\ldots,\theta_k^{(0)}  \right)$$
+   
+   + Sample a new value $\theta_2^{(1)}$ for the 2nd component of $\theta$, from its full *conditional distribution* 
+   $$ \theta_2^{(1)}\sim p\left(\theta_2 \mid\theta_1^{(1)},\theta_3^{(0)}\ldots,\theta_k^{(0)}  \right)$$
+   
+   + ...
+   + $\theta_k^{(1)}\sim p\left(\theta_1 \mid\theta_1^{(1)},\theta_2^{(1)}\ldots,\theta_{k-1}^{(1)}  \right)$
+   + This completes one iteration of the Gibbs sampler and generates a new realization of the vector of unknowns $\theta^{(1)}$.
+
+3. Repeat Step 2 many times and obtain a sample $\theta^{(1)},\ldots, \theta^{(T)}$
+
+
+
+
+  
+## Fitting Data to the model : 
+
+
++  We suppose that $\tau$ is the change-point date and that before that date  the exchange rate follows an exponenetial distribution with parameter $\lambda_1$ and it follows after $\tau $  also a 
+  an exponential distribution with parameter $\lambda_1 +\lambda_2$. We will expect that $\lambda_1$ <0  
+### Prior distribution :
++For the mean parameters $\theta=(\lambda_1,\lambda_2)$ we will assume a non-informative distribution (Gaussian centered distribution with a tiny variance) 
++ For the change date we will assume an uniform distribution from one of the observation.
++ $N$ is the number of months from 2007 to 2018.
+
+Finally we get the the bayesian model :
+
+```{r, echo=T,eval=F}
+model {
+      for (year in 1:N) {
+           D[year] ~ dexp(mu[year])
+           log(mu[year]) <- b[1] + step(year - changeyear) * b[2]
+      }
+      for (j in 1:2) { b[j] ~ dnorm(0.0, 1.0E-6) }
+      changeyear ~ dunif(1,N)
+    }
+```
+
+
+
+## Compiling model with R ToOpenBUGS : 
+
+```{r, eval=F}
+sink('change year TND.txt')
+cat("
+    model {
+
+    for (year in 1:142) {
+    D[year] ~ dexp(mu[year])
+    log(mu[year]) <- b[1] + step(year - changeyear) * b[2]
+    }
+    for (j in 1:2) { b[j] ~ dnorm(0.0, 1.0E-6) }
+    changeyear ~ dunif(1,142)
+     
+    }
+    ",fill=T)
+
+sink()
+dt<-list(D=basefinale$price,N=N)
+inits=function(){
+  inits=list(b=rnorm(2),changeyear=sample(size = 1,x = 1:142))
+}
+## Params 
+params<-c("b","changeyear")
+## Running the MC
+library(R2OpenBUGS)
+filename<-'change year TND.txt'
+outCPEXP <-bugs(dt,inits(),params,filename,codaPkg=F,
+                  n.thin =1, n.iter=2000,debug=T,
+                  n.chains = 2,working.directory=getwd())
+```
+```{r,echo=F}
+library(R2OpenBUGS)
+load("final.RData")
+outexp
+```
++ So , when we apply this model , we obtain that the estimated change point is 
+```{r,}
+basefinale$Date[61]
+```
+## convergence of the Markov Chains:
+
++ We will start by showing the simulated markov chaines for the estimated parameters:
+
+ For  $\lambda_1$ :
+```{r, prompt=T}
+
+library(coda)
+b1=mcmc(outexp$sims.array[,,1])
+dim(b1)
+matplot(b1,col=c("green","blue"),type="l",ylab=expression(b_1))
+```
+For $\lambda_2$ : 
+```{r, prompt=T}
+b2=mcmc(outexp$sims.array[,,2])
+dim(b2)
+matplot(b2,col=c("green","blue"),type="l",ylab=expression(b_2))
+```
+
+For $\tau$ : We must mention that we work only with integers that are the row count of the real change year. We just need to see 
+in the data Set 
+```{r, prompt=T}
+changeyear=mcmc(outexp$sims.array[,,3])
+dim(changeyear)
+matplot(changeyear,col=c("green","blue"),type="l",ylab="changeyear")
+```
+
+
++ $\widehat{R}$ or Gelman diagnostics 
++ Or The *potential scale reduction factor*. It  is calculated for each estimated parameter, together with upper and lower confidence limits. Approximate convergence is diagnosed when the upper limit is close to 1. For multivariate chains, a multivariate value is calculated that bounds above the potential scale reduction factor for any linear combination of the (possibly transformed) variables.
+
+$\widehat{R}$ is greater than 1 and it declines to 1 when the number of iteration inscreases. 
+
+```{r, prompt=T}
+library(coda)
+gelman.diag(list(b1[,1],b1[,2]))
+```
+```{r, prompt=T}
+gelman.plot(list(changeyear[,1],changeyear[,2]))
+```
+
+```{r, prompt=T}
+gelman.diag(list(changeyear[,1],changeyear[,2]))
+```
+```{r, prompt=T}
+gelman.plot(list(changeyear[,1],changeyear[,2]))
+```
+
+```{r, prompt=T}
+gelman.diag(list(changeyear[,1],changeyear[,2]))
+```
+```{r, prompt=T}
+gelman.plot(list(b1[,1],b1[,2]))
+
+```
+
++ Autocorrelation
+
+```{r, prompt=T}
+autocorr.diag(b1)
+autocorr.diag(b2)
+autocorr.diag(changeyear)
+```
+```{r, prompt=T}
+autocorr.plot(b1)
+autocorr.plot(b2)
+autocorr.plot(changeyear)
+```
+
++ As we can see from the autocorellation graphs and By choosing n.thin = 6, we can take off the autocorrelation of the simulation obsevation 
+
+

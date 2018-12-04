@@ -1,0 +1,35 @@
+name: "Baklouti Marouan"
+output_dir: "."
+navbar:
+  title: "Baklouti Marouan"
+  right:
+    - text: "Home"
+      href: index.html
+    - text: "Contact me"
+      menu:
+        - text: kaggle
+          href: https://www.kaggle.com/marwenbak
+        
+        - icon: fa-github
+          href: https://github.com/baklouti1994
+        - icon: fa-envelope
+          href: mailto:baklouti.marouane@gmail.com
+    
+    
+    - text: "My Work"
+      menu:
+    
+       - text : Kernels
+         href: bayesian.html
+       - text : Shiny Apps
+         href: shinyapps.html
+       - text : Internships
+         href: internships.html
+   
+    - text: "CV"
+      href: https://www.cjoint.com/doc/18_11/HKDwIRgn27o_Curriculum-Vitae-3-.pdf
+output:
+  html_document:
+    theme: journal
+    highlight: textmate
+    css: css/style.css
